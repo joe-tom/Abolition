@@ -3,11 +3,18 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Reference } from "@/lib/types";
 import { api } from "@/lib/api";
 
-const SOURCE_BADGE: Record<string, string> = {
-  arxiv: "bg-red-900 text-red-200",
-  semantic_scholar: "bg-blue-900 text-blue-200",
-  tavily: "bg-green-900 text-green-200",
-  upload: "bg-purple-900 text-purple-200",
+const SOURCE_STYLE: Record<string, string> = {
+  arxiv: "bg-rose-500/15 text-rose-400 ring-1 ring-rose-500/30",
+  semantic_scholar: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30",
+  tavily: "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30",
+  upload: "bg-violet-500/15 text-violet-400 ring-1 ring-violet-500/30",
+};
+
+const SOURCE_LABEL: Record<string, string> = {
+  arxiv: "arXiv",
+  semantic_scholar: "S2",
+  tavily: "Web",
+  upload: "Upload",
 };
 
 interface Props {
@@ -50,54 +57,84 @@ export default function ReferencesPanel({ sessionId }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-800 flex items-center justify-between">
-        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-          References
-        </h2>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={!sessionId || uploading}
-          className="text-[10px] bg-gray-700 hover:bg-gray-600 disabled:opacity-40 px-2 py-1 rounded transition"
-        >
-          {uploading ? "Uploading..." : "+ Upload"}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".pdf,.csv,.xlsx,.xls,.txt"
-          className="hidden"
-          onChange={handleUpload}
-        />
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
-        {!sessionId && (
-          <p className="text-xs text-gray-600 p-1">
-            Select a session to see references.
+      {/* Panel header */}
+      <div className="flex-none px-4 py-3 border-b border-slate-700/60">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+            References
+          </p>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!sessionId || uploading}
+            className="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 px-2.5 py-1.5 rounded-lg transition"
+          >
+            {uploading ? (
+              <>
+                <span className="w-3 h-3 border-2 border-slate-500 border-t-slate-300 rounded-full animate-spin" />
+                Uploading
+              </>
+            ) : (
+              <>
+                <span className="text-slate-400">↑</span>
+                Upload
+              </>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.csv,.xlsx,.xls,.txt"
+            className="hidden"
+            onChange={handleUpload}
+          />
+        </div>
+        {refs.length > 0 && (
+          <p className="text-[10px] text-slate-600 mt-2">
+            {refs.length} reference{refs.length !== 1 ? "s" : ""}
           </p>
         )}
+      </div>
+
+      {/* Reference list */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {!sessionId && (
+          <div className="py-6 text-center">
+            <p className="text-xs text-slate-600">Select a session</p>
+            <p className="text-[10px] text-slate-700 mt-1">
+              to view references.
+            </p>
+          </div>
+        )}
         {refs.map((ref) => (
-          <div key={ref.id} className="bg-gray-900 rounded p-2 text-xs">
-            <div className="flex items-center gap-1 mb-1">
+          <div
+            key={ref.id}
+            className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3 hover:border-slate-600/60 transition"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[ref.source] ?? "bg-gray-700"}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-none ${SOURCE_STYLE[ref.source] ?? "bg-slate-500/15 text-slate-400"}`}
               >
-                {ref.source}
+                {SOURCE_LABEL[ref.source] ?? ref.source}
               </span>
-              <code className="text-gray-300 truncate">{ref.cite_key}</code>
+              <code className="text-slate-300 text-[10px] truncate font-mono">
+                {ref.cite_key}
+              </code>
             </div>
             {ref.summary_md && (
-              <p className="text-gray-500 line-clamp-2 text-[10px] leading-relaxed">
-                {ref.summary_md.replace(/^#+\s*/gm, "").slice(0, 120)}...
+              <p className="text-slate-500 text-[10px] leading-relaxed line-clamp-2">
+                {ref.summary_md.replace(/^#+\s*/gm, "").slice(0, 120)}…
               </p>
             )}
           </div>
         ))}
         {refs.length === 0 && sessionId && (
-          <p className="text-xs text-gray-600 p-1">
-            No references yet. Agent will collect them during research.
-          </p>
+          <div className="py-6 text-center">
+            <p className="text-xs text-slate-600">No references yet.</p>
+            <p className="text-[10px] text-slate-700 mt-1">
+              Agent will collect them during research.
+            </p>
+          </div>
         )}
       </div>
     </div>
