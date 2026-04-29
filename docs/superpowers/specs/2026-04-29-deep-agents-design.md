@@ -45,8 +45,8 @@
 
 - **Session:** 세션 목록, 새 세션 생성, 세션 삭제. 세션 클릭 시 해당 상태 복원.
 - **References:** 사용자가 직접 업로드한 PDF/CSV/Excel 파일 목록 + SearchAgent/PaperAgent가 수집한 논문 목록. 파일 추가 버튼 제공.
-- **Chat:** 모든 에이전트 메시지와 사용자 입력이 이 창에 스트리밍. HITL 승인 버튼도 여기에 렌더링.
-- **Preview:** 완성된 챕터를 LaTeX → HTML로 실시간 렌더링. 챕터 탭으로 전환 가능.
+- **Chat:** 모든 에이전트 메시지와 사용자 입력이 이 창에 SSE 스트리밍. HITL 승인 버튼도 여기에 렌더링.
+- **Preview:** 챕터 완성 또는 HITL 트리거 시점에만 업데이트. 작업 중에는 로딩 스피너 표시. 완성된 챕터를 LaTeX → HTML로 렌더링. 챕터 탭으로 전환 가능.
 
 ---
 
@@ -163,27 +163,29 @@ SearchAgent와 PaperAgent가 병렬 실행된다.
 
 ```sql
 sessions (
-  id          uuid primary key,
-  topic       text,
-  status      text,           -- clarifying | research | outline | writing | done
-  outline     jsonb,
-  created_at  timestamptz
+  id              uuid primary key,
+  topic           text,
+  status          text,           -- clarifying | research | outline | writing | done
+  outline         text,           -- Markdown 형식
+  clarify_notes   text,           -- clarifying Q&A 요약 Markdown
+  created_at      timestamptz
 )
 
 messages (
   id          uuid primary key,
   session_id  uuid references sessions,
-  role        text,           -- user | agent | critic
-  content     text,
+  role        text,               -- user | agent | critic
+  content     text,               -- Markdown 형식
   created_at  timestamptz
 )
 
-references (
+paper_references (
   id          uuid primary key,
   session_id  uuid references sessions,
-  bibtex      text,
+  summary_md  text,               -- 논문/자료 요약 Markdown (LLM이 읽는 포맷)
+  bibtex_raw  text,               -- BibTeX 원본 (최종 .bib 파일 생성용)
   cite_key    text,
-  source      text,           -- arxiv | semantic_scholar | tavily | upload
+  source      text,               -- arxiv | semantic_scholar | tavily | upload
   created_at  timestamptz
 )
 
@@ -192,9 +194,17 @@ chapters (
   session_id  uuid references sessions,
   order_index int,
   title       text,
-  latex       text,
-  status      text,           -- draft | reviewing | approved
-  critic_log  jsonb,          -- 리뷰 이력
+  latex       text,               -- 최종 LaTeX 본문
+  status      text,               -- draft | reviewing | approved
+  critic_log  text,               -- 리뷰 이력 Markdown
+  created_at  timestamptz
+)
+
+agent_memory (
+  id          uuid primary key,
+  session_id  uuid references sessions,
+  agent       text,               -- orchestrator | search | paper | write | ...
+  content     text,               -- 에이전트 작업 메모 Markdown
   created_at  timestamptz
 )
 ```
@@ -274,6 +284,8 @@ abolition/
 
 - **deepagents `task` 툴 활용:** 각 subagent를 별도 컨텍스트로 격리하여 오염 방지
 - **HITL 원칙:** CriticAgent는 자동 재작성 없이 반드시 사용자 승인 후 재작성. 문제 설명 → 사용자 결정 → 사용자 추가 입력 수집 순서를 지킨다.
-- **SSE 스트리밍:** 에이전트 출력을 채팅창에 토큰 단위로 실시간 전송
+- **LLM 내부 저장 포맷은 Markdown:** 에이전트가 기억, 참고문헌, 데이터 분석 결과를 저장할 때 모두 Markdown 형식으로 작성한다. JSON/BibTeX 원본은 별도 보관하되, LLM이 읽고 쓰는 컨텍스트는 Markdown으로 통일하여 토큰 효율을 높인다.
+- **Preview는 이벤트 기반 렌더링:** 논문 본문은 토큰 단위 스트리밍 없이, 챕터 완성 또는 사용자 의견이 필요한 시점(HITL 트리거)에만 Preview 패널을 업데이트한다. 진행 중에는 로딩 인디케이터를 표시한다.
+- **Chat 창만 SSE 스트리밍:** 에이전트의 채팅 메시지(질문, 상태 안내, critic 리포트)는 토큰 단위로 스트리밍. 논문 본문은 스트리밍하지 않는다.
 - **LaTeX 우선:** 모든 출력은 처음부터 LaTeX 형식으로 작성. HTML 렌더링은 Preview 전용
 - **최대 반복 3회:** critic 루프가 무한 반복되지 않도록 챕터당 최대 3회로 제한, 이후 자동 확정
