@@ -29,6 +29,10 @@ def get_chapters(session_id: str):
 def get_references(session_id: str):
     return refs_repo.get_references(session_id)
 
+@router.get("/library/references", response_model=list)
+def get_library():
+    return refs_repo.get_library_references()
+
 @router.delete("/sessions/{session_id}", status_code=204)
 def delete_session(session_id: str):
     if not sessions_repo.delete_session(session_id):

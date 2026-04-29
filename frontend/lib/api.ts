@@ -35,6 +35,12 @@ export const api = {
     return res.json();
   },
 
+  async getLibraryReferences() {
+    const res = await fetch(`${BASE}/api/library/references`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
   async uploadFile(sessionId: string, file: File) {
     const form = new FormData();
     form.append("file", file);
