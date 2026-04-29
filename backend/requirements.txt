@@ -1,0 +1,16 @@
+deepagents
+fastapi
+uvicorn[standard]
+supabase
+langchain
+langchain-anthropic
+arxiv
+tavily-python
+httpx
+bibtexparser
+python-multipart
+pydantic-settings
+python-dotenv
+pytest
+pytest-asyncio
+pytest-httpx
