@@ -28,3 +28,8 @@ def get_chapters(session_id: str):
 @router.get("/sessions/{session_id}/references", response_model=list)
 def get_references(session_id: str):
     return refs_repo.get_references(session_id)
+
+@router.delete("/sessions/{session_id}", status_code=204)
+def delete_session(session_id: str):
+    if not sessions_repo.delete_session(session_id):
+        raise HTTPException(status_code=404, detail="Session not found")

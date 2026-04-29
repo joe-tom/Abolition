@@ -7,6 +7,7 @@ from backend.agents.subagents import (
     call_references_agent, call_figure_agent, call_critic_agent,
 )
 from backend.agents.hitl_tools import request_human_decision, request_human_answers
+from backend.memory.tools import search_memory, save_to_memory
 
 _checkpointer = MemorySaver()
 _orchestrator = None
@@ -26,6 +27,8 @@ def get_orchestrator():
                 call_critic_agent,
                 request_human_decision,
                 request_human_answers,
+                search_memory,
+                save_to_memory,
             ],
             system_prompt=ORCHESTRATOR_PROMPT,
             checkpointer=_checkpointer,

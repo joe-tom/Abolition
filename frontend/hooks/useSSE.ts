@@ -6,10 +6,11 @@ const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 let msgCounter = 0;
 
-export const useSSE = (sessionId: string | null) => {
+export const useSSE = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [previewStale, setPreviewStale] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const currentAgentMsgId = useRef<string | null>(null);
 
   const appendToken = useCallback((token: string) => {
@@ -97,10 +98,9 @@ export const useSSE = (sessionId: string | null) => {
   const sendMessage = useCallback(
     async (message: string) => {
       if (!sessionId || isStreaming) return;
-      const userMsgId = `user-${++msgCounter}`;
       setMessages((prev) => [
         ...prev,
-        { id: userMsgId, role: "user", content: message },
+        { id: `user-${++msgCounter}`, role: "user", content: message },
       ]);
       const res = await fetch(`${BASE}/api/sessions/${sessionId}/chat`, {
         method: "POST",
@@ -135,5 +135,6 @@ export const useSSE = (sessionId: string | null) => {
     resumeHITL,
     clearPreviewStale,
     setMessages,
+    setSessionId,
   };
 };

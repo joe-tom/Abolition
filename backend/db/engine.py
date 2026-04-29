@@ -12,6 +12,12 @@ _SessionFactory = sessionmaker(engine, expire_on_commit=False)
 
 def init_db() -> None:
     Base.metadata.create_all(engine)
+    with engine.connect() as conn:
+        conn.execute(__import__("sqlalchemy").text(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts "
+            "USING fts5(id UNINDEXED, title, content, tokenize='unicode61')"
+        ))
+        conn.commit()
 
 @contextmanager
 def get_db() -> Session:

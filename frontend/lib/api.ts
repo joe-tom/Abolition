@@ -54,6 +54,19 @@ export const api = {
     });
   },
 
+  async getMessages(sessionId: string) {
+    const res = await fetch(`${BASE}/api/sessions/${sessionId}/messages`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async deleteSession(sessionId: string) {
+    const res = await fetch(`${BASE}/api/sessions/${sessionId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error(await res.text());
+  },
+
   getDownloadUrl(sessionId: string): string {
     return `${BASE}/api/sessions/${sessionId}/download`;
   },

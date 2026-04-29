@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
@@ -52,4 +52,14 @@ class AgentMemory(Base):
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
     agent      = Column(String, nullable=False)
     content    = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=_now)
+
+class MemoryItem(Base):
+    __tablename__ = "memory_items"
+    id         = Column(String, primary_key=True)
+    session_id = Column(String, nullable=True)
+    type       = Column(String, nullable=False)   # 'reference' | 'content'
+    title      = Column(Text, nullable=False)
+    content    = Column(Text, nullable=False)
+    embedding  = Column(LargeBinary, nullable=True)
     created_at = Column(DateTime, default=_now)

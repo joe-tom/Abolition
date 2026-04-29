@@ -7,8 +7,6 @@ import ChatPanel from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 
 export default function Home() {
-  const { sessions, activeSession, loading, createSession, selectSession } =
-    useSession();
   const {
     messages,
     isStreaming,
@@ -17,67 +15,56 @@ export default function Home() {
     resumeHITL,
     clearPreviewStale,
     setMessages,
-  } = useSSE(activeSession?.id ?? null);
+    setSessionId,
+  } = useSSE();
+
+  const {
+    sessions,
+    activeSession,
+    loading,
+    createSession,
+    selectSession,
+    deleteSession,
+  } = useSession({ onMessages: setMessages, onSessionId: setSessionId });
 
   return (
     <div className="flex flex-col h-full">
-      {/* Top header */}
-      <header className="flex-none flex items-center gap-3 px-5 py-3 bg-slate-900 border-b border-slate-700/60 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-            P
-          </div>
-          <span className="font-semibold text-sm text-slate-100 tracking-tight">
-            Paper Writer
-          </span>
-        </div>
-        <span className="text-slate-600 text-xs">|</span>
-        <span className="text-slate-400 text-xs">
-          AI-powered academic writing assistant
+      <header className="flex-none flex items-center gap-4 px-4 h-10 bg-white border-b border-gray-900">
+        <span className="font-bold text-sm tracking-tight">PAPER WRITER</span>
+        <span className="text-gray-400 text-xs">|</span>
+        <span className="text-gray-500 text-xs">
+          AI academic writing assistant
         </span>
         {activeSession && (
           <>
-            <span className="text-slate-600 text-xs ml-auto">Session:</span>
-            <span className="text-slate-300 text-xs font-medium truncate max-w-xs">
+            <span className="text-gray-300 text-xs ml-auto">session:</span>
+            <span className="text-gray-700 text-xs truncate max-w-xs">
               {activeSession.topic}
             </span>
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                {
-                  clarifying: "bg-amber-500/20 text-amber-400",
-                  research: "bg-blue-500/20 text-blue-400",
-                  outline: "bg-violet-500/20 text-violet-400",
-                  writing: "bg-emerald-500/20 text-emerald-400",
-                  done: "bg-slate-500/20 text-slate-400",
-                }[activeSession.status] ?? "bg-slate-500/20 text-slate-400"
-              }`}
-            >
+            <span className="text-[10px] px-1.5 py-0.5 border border-gray-400 text-gray-600 uppercase tracking-wide">
               {activeSession.status}
             </span>
           </>
         )}
       </header>
 
-      {/* 4-column body */}
       <div className="flex flex-1 min-h-0">
-        {/* Col 1 — Sessions (20%) */}
-        <div className="w-1/5 min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-900 overflow-hidden">
+        <div className="w-1/5 min-w-0 border-r border-gray-900 flex flex-col bg-white overflow-hidden">
           <SessionPanel
             sessions={sessions}
             activeSession={activeSession}
             loading={loading}
             onCreateSession={createSession}
             onSelectSession={selectSession}
+            onDeleteSession={deleteSession}
           />
         </div>
 
-        {/* Col 2 — References (20%) */}
-        <div className="w-1/5 min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-900 overflow-hidden">
+        <div className="w-1/5 min-w-0 border-r border-gray-900 flex flex-col bg-white overflow-hidden">
           <ReferencesPanel sessionId={activeSession?.id ?? null} />
         </div>
 
-        {/* Col 3 — Chat (30%) */}
-        <div className="w-[30%] min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-950 overflow-hidden">
+        <div className="w-[30%] min-w-0 border-r border-gray-900 flex flex-col bg-white overflow-hidden">
           <ChatPanel
             messages={messages}
             isStreaming={isStreaming}
@@ -87,8 +74,7 @@ export default function Home() {
           />
         </div>
 
-        {/* Col 4 — Preview (30%) */}
-        <div className="w-[30%] min-w-0 flex flex-col bg-slate-950 overflow-hidden">
+        <div className="w-[30%] min-w-0 flex flex-col bg-white overflow-hidden">
           <PreviewPanel
             sessionId={activeSession?.id ?? null}
             previewStale={previewStale}

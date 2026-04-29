@@ -11,6 +11,7 @@ bibtexparser
 python-multipart
 pydantic-settings
 python-dotenv
+sentence-transformers
 pytest
 pytest-asyncio
 pytest-httpx
