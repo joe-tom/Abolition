@@ -72,3 +72,13 @@ def test_bibtex_to_markdown_deduplicates():
     from backend.tools.bibtex_manager import bibtex_to_markdown
     result = bibtex_to_markdown.invoke({"raw_bibtex": raw})
     assert result.count("smith2024") == 1
+
+
+def test_call_write_agent_returns_string():
+    mock_agent = MagicMock()
+    mock_agent.invoke.return_value = {"messages": [MagicMock(content="\\section{Introduction}\nContent here.")]}
+    with patch("backend.agents.subagents.create_deep_agent", return_value=mock_agent):
+        with patch("backend.agents.subagents.get_model", return_value=MagicMock()):
+            from backend.agents.subagents import call_write_agent
+            result = call_write_agent.invoke({"task": "Write introduction chapter."})
+            assert "\\section{Introduction}" in result
