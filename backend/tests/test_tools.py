@@ -82,3 +82,15 @@ def test_call_write_agent_returns_string():
             from backend.agents.subagents import call_write_agent
             result = call_write_agent.invoke({"task": "Write introduction chapter."})
             assert "\\section{Introduction}" in result
+
+
+def test_get_orchestrator_returns_agent():
+    with patch("backend.agents.orchestrator.create_deep_agent") as mock_create:
+        with patch("backend.agents.orchestrator.get_model", return_value=MagicMock()):
+            mock_create.return_value = MagicMock()
+            import backend.agents.orchestrator as orch_module
+            orch_module._orchestrator = None  # reset singleton
+            from backend.agents.orchestrator import get_orchestrator
+            agent = get_orchestrator()
+            assert agent is not None
+            assert mock_create.call_count == 1
