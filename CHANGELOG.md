@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] — 2026-04-29
+
+### Changed
+
+- **Database**: Migrated from Supabase (PostgreSQL + Storage) to SQLite via SQLAlchemy — no external service required, DB file created automatically on first run
+- **File uploads**: Replaced Supabase Storage with local `uploads/` directory
+- **Config**: Removed `SUPABASE_URL` / `SUPABASE_KEY`; added `DATABASE_URL` (default: `sqlite:///./abolition.db`)
+- **Tests**: Replaced Supabase mocks with real in-memory SQLite — 16 tests passing
+
+### Added
+
+- LangSmith tracing via `LANGCHAIN_*` environment variables (optional)
+- Dashboard-style UI redesign (Tailwind v4, slate color palette, role avatars, status badges)
+
+---
+
 ## [0.1.0] — 2026-04-29
 
 ### Added

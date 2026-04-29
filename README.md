@@ -16,17 +16,17 @@ Orchestrator
 
 **Tech Stack**
 
-| Layer         | Technology                      |
-| ------------- | ------------------------------- |
-| Frontend      | Next.js 15, Tailwind CSS v4     |
-| Backend       | FastAPI, SSE streaming          |
-| Agent Runtime | deepagents (LangGraph)          |
-| LLM           | Claude claude-sonnet-4-6        |
-| Web Search    | Tavily API                      |
-| Paper Search  | arXiv + Semantic Scholar        |
-| Database      | Supabase (PostgreSQL + Storage) |
-| Output        | LaTeX (.tex + .bib + figures/)  |
-| Observability | LangSmith                       |
+| Layer         | Technology                     |
+| ------------- | ------------------------------ |
+| Frontend      | Next.js 15, Tailwind CSS v4    |
+| Backend       | FastAPI, SSE streaming         |
+| Agent Runtime | deepagents (LangGraph)         |
+| LLM           | Claude claude-sonnet-4-6       |
+| Web Search    | Tavily API                     |
+| Paper Search  | arXiv + Semantic Scholar       |
+| Database      | SQLite (via SQLAlchemy)        |
+| Output        | LaTeX (.tex + .bib + figures/) |
+| Observability | LangSmith (optional)           |
 
 ## UI Layout
 
@@ -47,7 +47,7 @@ Orchestrator
 4. **Writing** — Chapter-by-chapter loop: FigureAgent → WriteAgent → CriticAgent
    - CriticAgent reports issues → user decides rewrite or continue
    - On rewrite: targeted questions collected → WriteAgent revises (max 3 iterations)
-5. **Finalization** — `main.tex` assembled, uploaded to Supabase Storage
+5. **Finalization** — `main.tex` assembled and available for download as ZIP
 
 ## Getting Started
 
@@ -55,7 +55,6 @@ Orchestrator
 
 - Python 3.11+ (conda)
 - Node.js 20+
-- Supabase project with `uploads` (private) and `outputs` (public) storage buckets
 
 ### 1. Clone & configure
 
@@ -66,16 +65,7 @@ cp .env.example .env
 # Fill in .env with your API keys
 ```
 
-### 2. Supabase setup
-
-Run `supabase/migrations/20260429000000_init.sql` in the Supabase SQL Editor.
-
-Create storage buckets:
-
-- `uploads` — private
-- `outputs` — public
-
-### 3. Backend
+### 2. Backend
 
 ```bash
 conda create -n abolition python=3.11 -y
@@ -84,7 +74,9 @@ uv pip install -r backend/requirements.txt
 uvicorn backend.main:app --reload --port 10001
 ```
 
-### 4. Frontend
+The SQLite database (`abolition.db`) is created automatically on first run.
+
+### 3. Frontend
 
 ```bash
 cd frontend
@@ -97,28 +89,26 @@ Open `http://localhost:10000`.
 ## Environment Variables
 
 ```env
-# LangSmith tracing
+# LangSmith tracing (optional)
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=your_langsmith_key_here
 LANGCHAIN_PROJECT=abolition
 
-# LLM & tools
+# LLM & tools (required)
 ANTHROPIC_API_KEY=your_key_here
 TAVILY_API_KEY=your_key_here
 
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_service_role_key_here
+# Database (default: SQLite, no setup needed)
+DATABASE_URL=sqlite:///./abolition.db
 
-# Model
-MODEL_NAME=anthropic:claude-sonnet-4-6
+# Model (optional)
+# MODEL_NAME=anthropic:claude-sonnet-4-6
 ```
 
 ## Running Tests
 
 ```bash
 conda activate abolition
-cd D:/dev/abolition
 python -m pytest backend/tests/ -v
 ```
 

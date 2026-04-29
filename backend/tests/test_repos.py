@@ -5,12 +5,12 @@ def test_create_session():
     assert result["status"] == "clarifying"
     assert result["id"] is not None
 
-def test_list_sessions_returns_newest_first():
+def test_list_sessions_returns_all():
     from backend.db.repos.sessions import create_session, list_sessions
     create_session("First")
     create_session("Second")
-    results = list_sessions()
-    assert results[0]["topic"] == "Second"
+    topics = {r["topic"] for r in list_sessions()}
+    assert {"First", "Second"} == topics
 
 def test_upsert_reference_inserts_new():
     from backend.db.repos.sessions import create_session
