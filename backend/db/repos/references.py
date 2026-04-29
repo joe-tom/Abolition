@@ -1,14 +1,38 @@
 from uuid import uuid4
-from backend.db.client import get_client
+from sqlalchemy import select
+from backend.db.engine import get_db
+from backend.db.models import PaperReference
+
+def _row(obj: PaperReference) -> dict:
+    return {
+        "id": obj.id, "session_id": obj.session_id,
+        "cite_key": obj.cite_key, "summary_md": obj.summary_md,
+        "bibtex_raw": obj.bibtex_raw, "source": obj.source,
+        "created_at": obj.created_at.isoformat() if obj.created_at else None,
+    }
 
 def upsert_reference(session_id: str, cite_key: str, summary_md: str, bibtex_raw: str, source: str) -> dict:
-    existing = get_client().table("paper_references").select("id").eq("session_id", session_id).eq("cite_key", cite_key).execute().data
-    if existing:
-        return get_client().table("paper_references").update({"summary_md": summary_md, "bibtex_raw": bibtex_raw}).eq("id", existing[0]["id"]).execute().data[0]
-    return get_client().table("paper_references").insert({
-        "id": str(uuid4()), "session_id": session_id, "cite_key": cite_key,
-        "summary_md": summary_md, "bibtex_raw": bibtex_raw, "source": source
-    }).execute().data[0]
+    with get_db() as db:
+        existing = db.execute(
+            select(PaperReference)
+            .where(PaperReference.session_id == session_id, PaperReference.cite_key == cite_key)
+        ).scalar_one_or_none()
+        if existing:
+            existing.summary_md = summary_md
+            existing.bibtex_raw = bibtex_raw
+            db.flush()
+            return _row(existing)
+        obj = PaperReference(
+            id=str(uuid4()), session_id=session_id, cite_key=cite_key,
+            summary_md=summary_md, bibtex_raw=bibtex_raw, source=source,
+        )
+        db.add(obj)
+        db.flush()
+        return _row(obj)
 
 def get_references(session_id: str) -> list[dict]:
-    return get_client().table("paper_references").select("*").eq("session_id", session_id).execute().data
+    with get_db() as db:
+        rows = db.execute(
+            select(PaperReference).where(PaperReference.session_id == session_id)
+        ).scalars().all()
+        return [_row(r) for r in rows]

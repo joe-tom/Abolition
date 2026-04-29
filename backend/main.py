@@ -1,8 +1,15 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import sessions, chat, upload, output
+from backend.db.engine import init_db
 
-app = FastAPI(title="Paper Writer API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(title="Paper Writer API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

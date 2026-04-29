@@ -1,7 +1,7 @@
 deepagents
 fastapi
 uvicorn[standard]
-supabase
+sqlalchemy
 langchain
 langchain-anthropic
 arxiv
