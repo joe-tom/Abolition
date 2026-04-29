@@ -61,7 +61,7 @@ export default function Home() {
       {/* 4-column body */}
       <div className="flex flex-1 min-h-0">
         {/* Col 1 — Sessions (20%) */}
-        <div className="w-1/5 min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-900">
+        <div className="w-1/5 min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-900 overflow-hidden">
           <SessionPanel
             sessions={sessions}
             activeSession={activeSession}
@@ -72,12 +72,12 @@ export default function Home() {
         </div>
 
         {/* Col 2 — References (20%) */}
-        <div className="w-1/5 min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-900">
+        <div className="w-1/5 min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-900 overflow-hidden">
           <ReferencesPanel sessionId={activeSession?.id ?? null} />
         </div>
 
         {/* Col 3 — Chat (30%) */}
-        <div className="w-[30%] min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-950">
+        <div className="w-[30%] min-w-0 border-r border-slate-700/60 flex flex-col bg-slate-950 overflow-hidden">
           <ChatPanel
             messages={messages}
             isStreaming={isStreaming}
@@ -88,7 +88,7 @@ export default function Home() {
         </div>
 
         {/* Col 4 — Preview (30%) */}
-        <div className="w-[30%] min-w-0 flex flex-col bg-slate-950">
+        <div className="w-[30%] min-w-0 flex flex-col bg-slate-950 overflow-hidden">
           <PreviewPanel
             sessionId={activeSession?.id ?? null}
             previewStale={previewStale}
