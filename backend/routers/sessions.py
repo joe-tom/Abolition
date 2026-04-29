@@ -1,0 +1,30 @@
+from fastapi import APIRouter, HTTPException
+from backend.models.schemas import CreateSessionRequest
+from backend.db.repos import sessions as sessions_repo
+from backend.db.repos import chapters as chapters_repo
+from backend.db.repos import references as refs_repo
+
+router = APIRouter()
+
+@router.post("/sessions", response_model=dict)
+def create_session(body: CreateSessionRequest):
+    return sessions_repo.create_session(body.topic)
+
+@router.get("/sessions", response_model=list)
+def list_sessions():
+    return sessions_repo.list_sessions()
+
+@router.get("/sessions/{session_id}", response_model=dict)
+def get_session(session_id: str):
+    session = sessions_repo.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session
+
+@router.get("/sessions/{session_id}/chapters", response_model=list)
+def get_chapters(session_id: str):
+    return chapters_repo.get_chapters(session_id)
+
+@router.get("/sessions/{session_id}/references", response_model=list)
+def get_references(session_id: str):
+    return refs_repo.get_references(session_id)
