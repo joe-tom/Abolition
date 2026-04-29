@@ -11,7 +11,9 @@ Orchestrator
 ├── WriteAgent       — LaTeX chapter drafting
 ├── ReferencesAgent  — BibTeX collection & normalization
 ├── FigureAgent      — Tables, equations, figures in LaTeX
-└── CriticAgent      — Chapter review & HITL feedback
+├── CriticAgent      — Chapter review & HITL feedback
+├── search_memory    — BGE-M3 + FTS5 hybrid search over past sessions
+└── save_to_memory   — persist references & content for future sessions
 ```
 
 **Tech Stack**
@@ -25,6 +27,7 @@ Orchestrator
 | Web Search    | Tavily API                     |
 | Paper Search  | arXiv + Semantic Scholar       |
 | Database      | SQLite (via SQLAlchemy)        |
+| Embeddings    | BGE-M3 (sentence-transformers) |
 | Output        | LaTeX (.tex + .bib + figures/) |
 | Observability | LangSmith (optional)           |
 
@@ -75,6 +78,8 @@ uvicorn backend.main:app --reload --port 10001
 ```
 
 The SQLite database (`abolition.db`) is created automatically on first run.
+
+> **Note:** BGE-M3 (~1.5 GB) is downloaded from HuggingFace on first startup. Subsequent starts use the local cache.
 
 ### 3. Frontend
 

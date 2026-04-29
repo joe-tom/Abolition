@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] — 2026-04-29
+
+### Added
+
+- **Long-term memory**: BGE-M3 embeddings + SQLite FTS5 hybrid search (`backend/memory/`)
+  - `search_memory` / `save_to_memory` tools registered on the orchestrator
+  - Hybrid scoring: 70% vector cosine + 30% FTS5, threshold 0.1
+- **Chat history persistence**: messages saved to SQLite on stream end; restored when a session is selected
+- **Session delete**: `DELETE /api/sessions/{id}` endpoint + hover-reveal delete button in UI
+
+### Changed
+
+- **UI**: full light theme (white bg, black text, `font-mono`, zero `border-radius`)
+- **useSSE**: `sessionId` managed internally; exposed `setSessionId` for clean hook composition
+- **Semantic Scholar tool**: exponential backoff (up to 3 retries) on HTTP 429
+- **SSE chunk parsing**: extract text from list-type `chunk.content` (fixes `[object Object]` bug)
+- **LangSmith**: `load_dotenv()` called at app startup so `LANGCHAIN_*` vars reach the SDK
+- **Markdown rendering**: agent messages rendered via `react-markdown` + `remark-gfm`
+- **Chat UX**: textarea autofocuses after streaming ends
+
+---
+
 ## [0.2.0] — 2026-04-29
 
 ### Changed
