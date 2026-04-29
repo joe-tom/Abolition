@@ -12,11 +12,18 @@ const SOURCE_LABEL: Record<string, string> = {
 
 interface Props {
   sessionId: string | null;
+  refsStale: boolean;
+  onRefreshed: () => void;
 }
 
-export default function ReferencesPanel({ sessionId }: Props) {
+export default function ReferencesPanel({
+  sessionId,
+  refsStale,
+  onRefreshed,
+}: Props) {
   const [refs, setRefs] = useState<Reference[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadRefs = useCallback(async () => {
@@ -31,8 +38,15 @@ export default function ReferencesPanel({ sessionId }: Props) {
 
   useEffect(() => {
     setRefs([]);
+    setExpanded(null);
     loadRefs();
   }, [loadRefs]);
+
+  useEffect(() => {
+    if (refsStale) {
+      loadRefs().then(() => onRefreshed());
+    }
+  }, [refsStale, loadRefs, onRefreshed]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!sessionId || !e.target.files?.length) return;
@@ -77,26 +91,47 @@ export default function ReferencesPanel({ sessionId }: Props) {
             Select a session.
           </div>
         )}
-        {refs.map((ref) => (
-          <div
-            key={ref.id}
-            className="px-3 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold border border-gray-400 px-1 text-gray-600 uppercase">
-                {SOURCE_LABEL[ref.source] ?? ref.source}
-              </span>
-              <code className="text-gray-700 text-[10px] truncate">
-                {ref.cite_key}
-              </code>
+        {refs.map((ref) => {
+          const isOpen = expanded === ref.id;
+          const plainSummary = ref.summary_md
+            ? ref.summary_md
+                .replace(/^#+\s*/gm, "")
+                .replace(/\*+/g, "")
+                .trim()
+            : null;
+          return (
+            <div key={ref.id} className="border-b border-gray-200">
+              <button
+                className="w-full text-left px-3 py-3 hover:bg-gray-50 transition-colors"
+                onClick={() => setExpanded(isOpen ? null : ref.id)}
+              >
+                <div className="flex items-start gap-2 mb-1">
+                  <span className="flex-none text-[9px] font-bold border border-gray-400 px-1 py-0.5 text-gray-600 uppercase mt-0.5">
+                    {SOURCE_LABEL[ref.source] ?? ref.source}
+                  </span>
+                  <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2">
+                    {ref.title || ref.cite_key}
+                  </span>
+                </div>
+                <code className="text-[10px] text-gray-400 font-mono block mb-1">
+                  {ref.cite_key}
+                </code>
+                {plainSummary && !isOpen && (
+                  <p className="text-[10px] text-gray-400 leading-relaxed line-clamp-2">
+                    {plainSummary.slice(0, 150)}
+                  </p>
+                )}
+              </button>
+              {isOpen && plainSummary && (
+                <div className="px-3 pb-3 border-t border-gray-100 bg-gray-50">
+                  <p className="text-[10px] text-gray-600 leading-relaxed pt-2 whitespace-pre-wrap">
+                    {plainSummary}
+                  </p>
+                </div>
+              )}
             </div>
-            {ref.summary_md && (
-              <p className="text-gray-400 text-[10px] leading-relaxed line-clamp-2">
-                {ref.summary_md.replace(/^#+\s*/gm, "").slice(0, 120)}
-              </p>
-            )}
-          </div>
-        ))}
+          );
+        })}
         {refs.length === 0 && sessionId && (
           <div className="px-3 py-4 text-xs text-gray-400">
             No references yet.

@@ -25,6 +25,7 @@ export interface Chapter {
 export interface Reference {
   id: string;
   cite_key: string;
+  title: string | null;
   summary_md: string | null;
   source: "arxiv" | "semantic_scholar" | "tavily" | "upload";
   created_at: string;
@@ -34,6 +35,7 @@ export type SSEMessageType =
   | { type: "token"; content: string }
   | { type: "hitl"; data: HITLDecision | HITLQuestions }
   | { type: "preview_update"; session_id: string }
+  | { type: "reference_update"; session_id: string }
   | { type: "done" }
   | { type: "error"; message: string };
 

@@ -1,5 +1,5 @@
 from deepagents import create_deep_agent
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from backend.agents.base import get_model
 from backend.agents.prompts import ORCHESTRATOR_PROMPT
 from backend.agents.subagents import (
@@ -8,8 +8,9 @@ from backend.agents.subagents import (
 )
 from backend.agents.hitl_tools import request_human_decision, request_human_answers
 from backend.memory.tools import search_memory, save_to_memory
+from backend.tools.save_reference import save_reference
 
-_checkpointer = MemorySaver()
+_checkpointer = SqliteSaver.from_conn_string("./abolition_checkpoints.db")
 _orchestrator = None
 
 
@@ -29,6 +30,7 @@ def get_orchestrator():
                 request_human_answers,
                 search_memory,
                 save_to_memory,
+                save_reference,
             ],
             system_prompt=ORCHESTRATOR_PROMPT,
             checkpointer=_checkpointer,

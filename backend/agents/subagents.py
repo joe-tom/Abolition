@@ -1,4 +1,5 @@
 from langchain_core.tools import tool
+from langchain_core.runnables import RunnableConfig
 from deepagents import create_deep_agent
 from backend.agents.base import get_model
 from backend.agents.prompts import (
@@ -9,6 +10,7 @@ from backend.tools.tavily_search import tavily_search
 from backend.tools.arxiv_search import arxiv_search
 from backend.tools.semantic_scholar import semantic_scholar_search
 from backend.tools.bibtex_manager import bibtex_to_markdown, format_bibtex
+from backend.tools.save_reference import save_reference
 
 
 @tool
@@ -24,14 +26,15 @@ def call_search_agent(task: str) -> str:
 
 
 @tool
-def call_paper_agent(task: str) -> str:
+def call_paper_agent(task: str, config: RunnableConfig) -> str:
     """Delegate academic literature search to PaperAgent. Returns Markdown with BibTeX."""
     agent = create_deep_agent(
         model=get_model(),
-        tools=[arxiv_search, semantic_scholar_search],
+        tools=[arxiv_search, semantic_scholar_search, save_reference],
         system_prompt=PAPER_AGENT_PROMPT,
     )
-    result = agent.invoke({"messages": [{"role": "user", "content": task}]})
+    sub_config = {"configurable": config.get("configurable", {})}
+    result = agent.invoke({"messages": [{"role": "user", "content": task}]}, config=sub_config)
     return result["messages"][-1].content
 
 

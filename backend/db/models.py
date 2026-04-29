@@ -29,6 +29,7 @@ class PaperReference(Base):
     __tablename__ = "paper_references"
     id         = Column(String, primary_key=True)
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
+    title      = Column(Text, nullable=True)
     summary_md = Column(Text, nullable=True)
     bibtex_raw = Column(Text, nullable=True)
     cite_key   = Column(String, nullable=True)

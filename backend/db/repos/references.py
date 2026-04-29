@@ -6,25 +6,27 @@ from backend.db.models import PaperReference
 def _row(obj: PaperReference) -> dict:
     return {
         "id": obj.id, "session_id": obj.session_id,
-        "cite_key": obj.cite_key, "summary_md": obj.summary_md,
-        "bibtex_raw": obj.bibtex_raw, "source": obj.source,
+        "title": obj.title, "cite_key": obj.cite_key,
+        "summary_md": obj.summary_md, "bibtex_raw": obj.bibtex_raw,
+        "source": obj.source,
         "created_at": obj.created_at.isoformat() if obj.created_at else None,
     }
 
-def upsert_reference(session_id: str, cite_key: str, summary_md: str, bibtex_raw: str, source: str) -> dict:
+def upsert_reference(session_id: str, cite_key: str, title: str, summary_md: str, bibtex_raw: str, source: str) -> dict:
     with get_db() as db:
         existing = db.execute(
             select(PaperReference)
             .where(PaperReference.session_id == session_id, PaperReference.cite_key == cite_key)
         ).scalar_one_or_none()
         if existing:
+            existing.title = title
             existing.summary_md = summary_md
             existing.bibtex_raw = bibtex_raw
             db.flush()
             return _row(existing)
         obj = PaperReference(
             id=str(uuid4()), session_id=session_id, cite_key=cite_key,
-            summary_md=summary_md, bibtex_raw=bibtex_raw, source=source,
+            title=title, summary_md=summary_md, bibtex_raw=bibtex_raw, source=source,
         )
         db.add(obj)
         db.flush()
@@ -34,5 +36,6 @@ def get_references(session_id: str) -> list[dict]:
     with get_db() as db:
         rows = db.execute(
             select(PaperReference).where(PaperReference.session_id == session_id)
+            .order_by(PaperReference.created_at)
         ).scalars().all()
         return [_row(r) for r in rows]

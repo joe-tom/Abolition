@@ -14,6 +14,8 @@ export default function Home() {
     sendMessage,
     resumeHITL,
     clearPreviewStale,
+    refsStale,
+    clearRefsStale,
     setMessages,
     setSessionId,
   } = useSSE();
@@ -61,7 +63,11 @@ export default function Home() {
         </div>
 
         <div className="w-1/5 min-w-0 border-r border-gray-900 flex flex-col bg-white overflow-hidden">
-          <ReferencesPanel sessionId={activeSession?.id ?? null} />
+          <ReferencesPanel
+            sessionId={activeSession?.id ?? null}
+            refsStale={refsStale}
+            onRefreshed={clearRefsStale}
+          />
         </div>
 
         <div className="w-[30%] min-w-0 border-r border-gray-900 flex flex-col bg-white overflow-hidden">

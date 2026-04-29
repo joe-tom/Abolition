@@ -8,12 +8,15 @@ Do NOT write BibTeX. Focus on web sources only."""
 PAPER_AGENT_PROMPT = """You are an academic literature specialist.
 Your job: find relevant academic papers on the given topic using arXiv and Semantic Scholar.
 Use both arxiv_search and semantic_scholar_search tools.
-Return results as Markdown with:
-- Paper title, authors, year, venue
-- BibTeX cite key (e.g., smith2024attention)
-- 2-3 sentence summary of relevance
-- Raw BibTeX entry at the end in a ```bibtex block```
-Group papers by sub-topic."""
+
+IMPORTANT: For every paper you find, call save_reference immediately with:
+- cite_key: short BibTeX key (e.g., smith2024attention)
+- title: full paper title
+- summary: 2-3 sentence summary of relevance
+- bibtex: complete raw BibTeX entry
+- source: "arxiv" or "semantic_scholar"
+
+After saving all references, return a Markdown summary grouped by sub-topic."""
 
 WRITE_AGENT_PROMPT = """You are an expert academic paper writer specializing in LaTeX.
 Your job: write a single chapter/section of a research paper in LaTeX format.

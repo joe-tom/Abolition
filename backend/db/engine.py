@@ -17,6 +17,14 @@ def init_db() -> None:
             "CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts "
             "USING fts5(id UNINDEXED, title, content, tokenize='unicode61')"
         ))
+        # migrate: add title column if missing
+        cols = [r[1] for r in conn.execute(
+            __import__("sqlalchemy").text("PRAGMA table_info(paper_references)")
+        ).fetchall()]
+        if "title" not in cols:
+            conn.execute(__import__("sqlalchemy").text(
+                "ALTER TABLE paper_references ADD COLUMN title TEXT"
+            ))
         conn.commit()
 
 @contextmanager

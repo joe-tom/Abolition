@@ -10,6 +10,7 @@ export const useSSE = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [previewStale, setPreviewStale] = useState(false);
+  const [refsStale, setRefsStale] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const currentAgentMsgId = useRef<string | null>(null);
 
@@ -71,6 +72,8 @@ export const useSSE = () => {
                   hitl: parsed.data as any,
                 },
               ]);
+            } else if (parsed.type === "reference_update") {
+              setRefsStale(true);
             } else if (parsed.type === "preview_update") {
               setPreviewStale(true);
             } else if (parsed.type === "done") {
@@ -126,14 +129,17 @@ export const useSSE = () => {
   );
 
   const clearPreviewStale = useCallback(() => setPreviewStale(false), []);
+  const clearRefsStale = useCallback(() => setRefsStale(false), []);
 
   return {
     messages,
     isStreaming,
     previewStale,
+    refsStale,
     sendMessage,
     resumeHITL,
     clearPreviewStale,
+    clearRefsStale,
     setMessages,
     setSessionId,
   };

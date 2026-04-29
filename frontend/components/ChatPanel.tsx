@@ -233,7 +233,7 @@ export default function ChatPanel({
         {messages.map((msg) => (
           <MessageBubble key={msg.id} msg={msg} onResume={onResumeHITL} />
         ))}
-        {isStreaming && (
+        {isStreaming && messages[messages.length - 1]?.role !== "agent" && (
           <div className="pr-8 mb-4">
             <div className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">
               Agent
