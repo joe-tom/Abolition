@@ -52,7 +52,7 @@ async def _stream_events(input_, session_id: str, user_content: str | None = Non
                         agent_buffer.clear()
                     yield f"data: {json.dumps({'type': 'hitl', 'data': output})}\n\n"
 
-                elif tool_name in ("call_write_agent", "call_critic_agent"):
+                elif tool_name in ("call_write_agent", "call_critic_agent", "save_chapter"):
                     yield f"data: {json.dumps({'type': 'preview_update', 'session_id': session_id})}\n\n"
 
                 elif tool_name == "save_reference":

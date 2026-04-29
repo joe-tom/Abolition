@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import List
 from backend.models.schemas import CreateSessionRequest
 from backend.db.repos import sessions as sessions_repo
 from backend.db.repos import chapters as chapters_repo
@@ -37,3 +39,10 @@ def get_library():
 def delete_session(session_id: str):
     if not sessions_repo.delete_session(session_id):
         raise HTTPException(status_code=404, detail="Session not found")
+
+class ImportRefsRequest(BaseModel):
+    cite_keys: List[str]
+
+@router.post("/sessions/{session_id}/references/import", response_model=list)
+def import_references(session_id: str, body: ImportRefsRequest):
+    return refs_repo.import_references(session_id, body.cite_keys)

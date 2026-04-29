@@ -41,6 +41,19 @@ export const api = {
     return res.json();
   },
 
+  async importReferences(sessionId: string, citeKeys: string[]) {
+    const res = await fetch(
+      `${BASE}/api/sessions/${sessionId}/references/import`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cite_keys: citeKeys }),
+      },
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
   async uploadFile(sessionId: string, file: File) {
     const form = new FormData();
     form.append("file", file);

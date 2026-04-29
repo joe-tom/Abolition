@@ -28,10 +28,13 @@ export const useSession = (options: UseSessionOptions = {}) => {
   }, [loadSessions]);
 
   const createSession = useCallback(
-    async (topic: string) => {
+    async (topic: string, citeKeys: string[] = []) => {
       setLoading(true);
       try {
         const session = await api.createSession(topic);
+        if (citeKeys.length > 0) {
+          await api.importReferences(session.id, citeKeys);
+        }
         setSessions((prev) => [session, ...prev]);
         setActiveSession(session);
         onSessionId?.(session.id);

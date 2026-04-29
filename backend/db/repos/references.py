@@ -2,6 +2,7 @@ from uuid import uuid4
 from sqlalchemy import select
 from backend.db.engine import get_db
 from backend.db.models import PaperReference
+from typing import List
 
 def _row(obj: PaperReference) -> dict:
     return {
@@ -70,3 +71,38 @@ def get_library_references() -> list[dict]:
                 seen.add(r.cite_key)
                 result.append(_row(r))
         return result
+
+def import_references(session_id: str, cite_keys: List[str]) -> list[dict]:
+    """Copy library references by cite_key into a session."""
+    imported = []
+    with get_db() as db:
+        for ck in cite_keys:
+            src = db.execute(
+                select(PaperReference)
+                .where(PaperReference.cite_key == ck)
+                .order_by(PaperReference.created_at.desc())
+            ).scalar_one_or_none()
+            if not src:
+                continue
+            existing = db.execute(
+                select(PaperReference).where(
+                    PaperReference.session_id == session_id,
+                    PaperReference.cite_key == ck,
+                )
+            ).scalar_one_or_none()
+            if existing:
+                imported.append(_row(existing))
+                continue
+            obj = PaperReference(
+                id=str(uuid4()),
+                session_id=session_id,
+                cite_key=src.cite_key,
+                title=src.title,
+                summary_md=src.summary_md,
+                bibtex_raw=src.bibtex_raw,
+                source=src.source,
+            )
+            db.add(obj)
+            db.flush()
+            imported.append(_row(obj))
+    return imported
