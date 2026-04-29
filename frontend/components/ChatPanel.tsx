@@ -106,20 +106,18 @@ function MessageBubble({
         }`}
       >
         {msg.content}
-        {msg.hitl && (msg.hitl as HITLDecision).options && (
+        {msg.hitl?.type === "hitl_decision" && (
           <HITLDecisionBlock
             data={msg.hitl as HITLDecision}
             onResume={onResume}
           />
         )}
-        {msg.hitl &&
-          (msg.hitl as HITLQuestions).questions &&
-          !(msg.hitl as HITLDecision).options && (
-            <HITLQuestionsBlock
-              data={msg.hitl as HITLQuestions}
-              onResume={onResume}
-            />
-          )}
+        {msg.hitl?.type === "hitl_questions" && (
+          <HITLQuestionsBlock
+            data={msg.hitl as HITLQuestions}
+            onResume={onResume}
+          />
+        )}
       </div>
     </div>
   );
