@@ -11,4 +11,4 @@ def tavily_search(query: str) -> str:
     lines = []
     for r in results["results"]:
         lines.append(f"## {r['title']}\n{r['url']}\n\n{r['content']}")
-    return "\n\n---\n\n".join(lines)
+    return "\n\n---\n\n".join(lines) if lines else "No results found."
